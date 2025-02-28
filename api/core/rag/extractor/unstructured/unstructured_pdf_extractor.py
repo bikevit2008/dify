@@ -29,7 +29,7 @@ class UnstructuredPDFExtractor(BaseExtractor):
             from unstructured.partition.api import partition_via_api
 
             elements = partition_via_api(
-                filename=self._file_path, api_url=self._api_url, api_key=self._api_key, strategy="auto"
+                filename=self._file_path, api_url=self._api_url, api_key=self._api_key, strategy="auto", languages=["rus", "eng"]
             )
         else:
             from unstructured.partition.pdf import partition_pdf

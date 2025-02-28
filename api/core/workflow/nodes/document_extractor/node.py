@@ -187,18 +187,31 @@ def _extract_text_from_yaml(file_content: bytes) -> str:
 
 
 def _extract_text_from_pdf(file_content: bytes) -> str:
-    try:
-        pdf_file = io.BytesIO(file_content)
-        pdf_document = pypdfium2.PdfDocument(pdf_file, autoclose=True)
-        text = ""
-        for page in pdf_document:
-            text_page = page.get_textpage()
-            text += text_page.get_text_range()
-            text_page.close()
-            page.close()
-        return text
-    except Exception as e:
-        raise TextExtractionError(f"Failed to extract text from PDF: {str(e)}") from e
+    from tempfile import NamedTemporaryFile
+    from configs import dify_config
+    if dify_config.ETL_TYPE == "Unstructured":
+         unstructured_api_url = dify_config.UNSTRUCTURED_API_URL
+         unstructured_api_key = dify_config.UNSTRUCTURED_API_KEY or ""
+         with NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+             tmp.write(file_content)
+             tmp.flush()
+             tmp_path = tmp.name
+         from core.rag.extractor.unstructured.unstructured_pdf_extractor import UnstructuredPDFExtractor
+         extractor = UnstructuredPDFExtractor(tmp_path, unstructured_api_url, unstructured_api_key)
+         return extractor.extract()
+    else:
+         try:
+             pdf_file = io.BytesIO(file_content)
+             pdf_document = pypdfium2.PdfDocument(pdf_file, autoclose=True)
+             text = ""
+             for page in pdf_document:
+                 text_page = page.get_textpage()
+                 text += text_page.get_text_range()
+                 text_page.close()
+                 page.close()
+             return text
+         except Exception as e:
+             raise TextExtractionError(f"Failed to extract text from PDF: {str(e)}") from e
 
 
 def _extract_text_from_doc(file_content: bytes) -> str:

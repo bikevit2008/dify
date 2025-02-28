@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Optional, Union
 from urllib.parse import unquote
 
+from core.rag.extractor.unstructured.unstructured_pdf_extractor import UnstructuredPDFExtractor
 from configs import dify_config
 from core.helper import ssrf_proxy
 from core.rag.extractor.csv_extractor import CSVExtractor
@@ -110,7 +111,8 @@ class ExtractProcessor:
                     if file_extension in {".xlsx", ".xls"}:
                         extractor = ExcelExtractor(file_path)
                     elif file_extension == ".pdf":
-                        extractor = PdfExtractor(file_path)
+                        # extractor = PdfExtractor(file_path)
+                        extractor = UnstructuredPDFExtractor(file_path, unstructured_api_url, unstructured_api_key)
                     elif file_extension in {".md", ".markdown", ".mdx"}:
                         extractor = (
                             UnstructuredMarkdownExtractor(file_path, unstructured_api_url, unstructured_api_key)
